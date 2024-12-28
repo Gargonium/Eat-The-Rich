@@ -1,39 +1,36 @@
 package main
 
 import (
+	"fmt"
 	"net"
-	"os"
 )
 
-func ConnectToServer(host string, port string) {
-	tcpServer, err := net.ResolveTCPAddr("tcp", host+":"+port)
-
+func getServerIp() {
+	addr, err := net.ResolveUDPAddr("udp", multicastAddress)
 	if err != nil {
-		println("ResolveTCPAddr failed:", err.Error())
-		os.Exit(1)
+		fmt.Println("Ошибка разрешения адреса:", err)
+		return
 	}
 
-	conn, err := net.DialTCP("tcp", nil, tcpServer)
+	// Создаем сокет для прослушивания мультикаста
+	conn, err := net.ListenMulticastUDP("udp", nil, addr)
 	if err != nil {
-		println("Dial failed:", err.Error())
-		os.Exit(1)
+		fmt.Println("Ошибка создания сокета:", err)
+		return
 	}
+	defer conn.Close()
 
-	_, err = conn.Write([]byte("This is a message"))
-	if err != nil {
-		println("Write data failed:", err.Error())
-		os.Exit(1)
+	// Устанавливаем буфер на соединении
+	conn.SetReadBuffer(1024)
+
+	for {
+		buffer := make([]byte, 1024)
+		n, src, err := conn.ReadFromUDP(buffer)
+		if err != nil {
+			fmt.Println("Ошибка при чтении:", err)
+			return
+		}
+
+		fmt.Printf("Сообщение получено от %v: %s\n", src, string(buffer[:n]))
 	}
-
-	// buffer to get data
-	received := make([]byte, 1024)
-	_, err = conn.Read(received)
-	if err != nil {
-		println("Read data failed:", err.Error())
-		os.Exit(1)
-	}
-
-	println("Received message:", string(received))
-
-	conn.Close()
 }

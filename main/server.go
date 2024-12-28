@@ -8,38 +8,36 @@ import (
 )
 
 const (
-	multicastAddress = "224.0.0.1"
-	multicastPort    = "9999"
-	port             = "8886"
+	multicastAddress = "239.0.0.1:9999"
+	serverPort       = "8000"
 )
 
-func SendMulticast() {
+var serverIp string
 
-	// Резолвим адрес для мультикаста
-	udpAddr, err := net.ResolveUDPAddr("udp", multicastAddress+":"+multicastPort)
+func sendMulticast() {
+	addr, err := net.ResolveUDPAddr("udp", multicastAddress)
 	if err != nil {
-		fmt.Println("Ошибка при разрешении адреса:", err)
+		fmt.Println("Ошибка разрешения адреса:", err)
 		return
 	}
 
-	// Подключаемся к мультикастной группе
-	conn, err := net.DialUDP("udp", nil, udpAddr)
+	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
-		fmt.Println("Ошибка при подключении:", err)
+		fmt.Println("Ошибка создания соединения:", err)
 		return
 	}
 	defer conn.Close()
 
-	// Отправляем сообщения каждые 2 секунды
 	for {
-		message := "--ETR--" + getLocalAddress() + ":" + port + "--RTE--"
-		_, err := conn.Write([]byte(message))
+		message := []byte("--ETR--" + getLocalAddress() + serverPort + "--RTE--")
+		_, err := conn.Write(message)
 		if err != nil {
-			fmt.Println("Ошибка при отправке:", err)
+			fmt.Println("Ошибка отправки сообщения:", err)
 			return
 		}
-		fmt.Println("Сообщение отправлено:", message)
-		time.Sleep(2 * time.Second)
+
+		fmt.Println("Сообщение отправлено:", string(message))
+		time.Sleep(2 * time.Second) // Отправлять сообщение каждые 2 секунды
 	}
 }
 
