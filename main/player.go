@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"slices"
 )
 
@@ -17,22 +16,23 @@ type Player struct {
 	isRich          bool
 	currentPosition int
 	inventorySize   int
-	inventory       []Item
+	//inventory       []Item
 }
 
-func (p Player) initRich() {
+func (p Player) initRich() Player {
 	p.isRich = true
 	p.money = RichInitMoney
 	p.currentPosition = 1
 	p.inventorySize = 9
-	p.inventory = append(p.inventory, RiseCost)
+	//p.inventory = append(p.inventory, RiseCost)
+	return p
 }
 
-func (p Player) initPoor() {
+func (p Player) initPoor() Player {
 	p.isRich = false
 	p.money = PoorInitMoney
 	p.inventorySize = 2
-	p.inventory = append(p.inventory, Knife)
+	//p.inventory = append(p.inventory, Knife)
 	switch poorPlayerCount {
 	case 0:
 		p.currentPosition = 21
@@ -42,6 +42,7 @@ func (p Player) initPoor() {
 		p.currentPosition = 26
 	}
 	poorPlayerCount++
+	return p
 }
 
 func (p Player) becomePoor() {
@@ -63,25 +64,28 @@ func (p Player) getMovement() []int {
 	return movement
 }
 
-func (p Player) getCurrentSpaceState() {
+func (p Player) getCurrentSpaceState() string {
 	switch mapSlice[p.currentPosition][0] {
 	case BlankSpace:
-		fmt.Println("BlankSpace")
+		return "BlankSpace"
 	case BadSpace:
-		fmt.Println("BadSpace")
+		return "BadSpace"
 	case GoodSpace:
-		fmt.Println("GoodSpace")
+		return "GoodSpace"
 	case ShopSpace:
-		fmt.Println("ShopSpace")
+		return "ShopSpace"
 	case GambleSpace:
-		fmt.Println("GambleSpace")
+		return "GambleSpace"
+	default:
+		return "Error, unknown space"
 	}
 }
 
-func (p Player) move(dest int) {
+func (p Player) move(dest int, err error) (string, Player) {
 	if slices.Contains(p.getMovement(), dest) {
 		p.currentPosition = dest
+		return "", p
 	} else {
-		fmt.Println("You can`t move here")
+		return "You can`t move here", p
 	}
 }
