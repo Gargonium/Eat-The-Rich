@@ -7,6 +7,12 @@ import (
 
 func main() {
 
+	//if os.Args[1] == "rich" {
+	//	sendMulticast()
+	//} else {
+	//	getServerIp()
+	//}
+
 	initMap()
 	var player Player
 	player = player.initPoor()
